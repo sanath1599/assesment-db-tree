@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlmodel import SQLModel, Field, create_engine, Session, Relationship
 from typing import Optional, List
+from sqlalchemy import JSON, Column
 
 class Tree(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -33,6 +34,12 @@ class Tree(SQLModel, table=True):
             raise ValueError(f"No version with tag {tag} found")
         return version.create_new_version(session, tag=None, description=f"Restored version from tag {tag}")
 
+    def get_root_nodes(self, session: Session):
+        return session.query(TreeNode).filter_by(tree_id=self.id, parent_version_id=None).all()
+
+    def get_by_tag(self, session: Session, tag: str):
+        return session.query(Tree).join(TreeVersion).filter(TreeVersion.tag == tag).first()
+
 
 class TreeVersion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -41,6 +48,7 @@ class TreeVersion(SQLModel, table=True):
     tag: Optional[str] = None
     description: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    tag_created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)  # Added tag_created_at
 
     tree: "Tree" = Relationship(back_populates="versions")
     nodes: List["TreeNode"] = Relationship(back_populates="version", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
@@ -70,13 +78,13 @@ class TreeVersion(SQLModel, table=True):
         session.commit()
         return new_version
 
-    def add_node(self, session: Session, data: str):
+    def add_node(self, session: Session, data: dict):  # Updated to use dict (JSON)
         new_node = TreeNode(tree_version_id=self.id, data=data)
         session.add(new_node)
         session.commit()
         return new_node
 
-    def add_edge(self, session: Session, node_id_1: int, node_id_2: int, data: str):
+    def add_edge(self, session: Session, node_id_1: int, node_id_2: int, data: dict):  # Updated to use dict (JSON)
         node1 = session.get(TreeNode, node_id_1)
         node2 = session.get(TreeNode, node_id_2)
         if not node1 or not node2:
@@ -86,11 +94,17 @@ class TreeVersion(SQLModel, table=True):
         session.commit()
         return new_edge
 
+    def get_child_nodes(self, session: Session):
+        return session.query(TreeNode).join(TreeEdge).filter(TreeEdge.incoming_node_id == self.id).all()
+
+    def get_parent_nodes(self, session: Session):
+        return session.query(TreeNode).join(TreeEdge).filter(TreeEdge.outgoing_node_id == self.id).all()
+
 
 class TreeNode(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     tree_version_id: int = Field(foreign_key="treeversion.id")
-    data: str
+    data: dict = Field(sa_column=Column(JSON))  # Corrected to use Column with JSON
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     version: "TreeVersion" = Relationship(back_populates="nodes")
@@ -101,7 +115,7 @@ class TreeEdge(SQLModel, table=True):
     tree_version_id: int = Field(foreign_key="treeversion.id")
     incoming_node_id: int = Field(foreign_key="treenode.id")
     outgoing_node_id: int = Field(foreign_key="treenode.id")
-    data: str
+    data: dict = Field(sa_column=Column(JSON))  # Corrected to use Column with JSON
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     version: "TreeVersion" = Relationship(back_populates="edges")
