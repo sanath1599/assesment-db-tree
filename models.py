@@ -32,7 +32,8 @@ class Tree(SQLModel, table=True):
         version = self.get_version_by_tag(session, tag)
         if not version:
             raise ValueError(f"No version with tag {tag} found")
-        return version.create_new_version(session, tag=None, description=f"Restored version from tag {tag}")
+        version.create_new_version(session, tag=tag, description=f"Restored version from tag {tag}")
+        return self.get_version_by_tag(session, tag)
 
     def get_root_nodes(self, session: Session):
         return session.query(TreeNode).filter_by(tree_id=self.id, parent_version_id=None).all()
