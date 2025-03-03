@@ -5,13 +5,15 @@
 - Pathfinding: Find paths between any two nodes in the tree using depth-first search (DFS).
 
 ###Project Structure 
-`tree-versioning-system/`
-`├── models.py          # Contains the data models for the tree, nodes, edges, and versions`
-`├── interactive_test.py.py            # Main script to interact with the system (for creating trees, versions, etc.)`
-`├── tests.py           # Unit and integration tests`
-`├── example.py.py           # Sample file to create data`
-`├── requirements.txt   # Project dependencies`
-`├──README.md          # Project documentation (you are here!)`
+```shell
+tree-versioning-system/
+├── models.py          # Contains the data models for the tree, nodes, edges, and versions
+├── interactive_test.py.py            # Main script to interact with the system (for creating trees, versions, etc.)
+├── tests.py           # Unit and integration tests
+├── example.py.py           # Sample file to create data
+├── requirements.txt   # Project dependencies
+├──README.md          # Project documentation (you are here!)
+```
 
 
 ### Setup
