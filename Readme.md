@@ -4,7 +4,7 @@
 - Tree Traversal: Traverse the tree starting from any node and explore its connected nodes and edges.
 - Pathfinding: Find paths between any two nodes in the tree using depth-first search (DFS).
 
-###Project Structure 
+### Project Structure 
 ```shell
 tree-versioning-system/
 ├── models.py          # Contains the data models for the tree, nodes, edges, and versions
@@ -19,45 +19,46 @@ tree-versioning-system/
 ### Setup
 #### Clone Repo
 ```git clone https://github.com/sanath1599/assesment-db-tree.git ```
+
 ```cd assesment-db-tree```
 
 #### INstall Dependencies
 ```pip install -r requirements.txt```
 
 ### Design Decisions & Tradeoffs
-####1. Data Model Choice: Relational vs. Non-Relational
-#####Reason:
+#### 1. Data Model Choice: Relational vs. Non-Relational
+##### Reason:
 I decided to use a relational database model with SQLModel and SQLAlchemy (built on top of SQLite) for storing tree versions, nodes, edges, and tags as it is easy to query, offers good Relational integrity and scalability. 
 
-#####Tradeoff:
+##### Tradeoff:
 Reduced flexibility
 
-####2. SQLModel
+#### 2. SQLModel
 ##### Reason: 
 I chose SQLModel as it allows you to define tables using Python classes in a well defined manner, it also ensures the data models are stictly typed and can be validated easily. It is database agnostic and can be used with most SQL dbs, and allows you to interact with database operations as Python objects. 
 
-#####Tradeoff: 
+##### Tradeoff: 
 While it is mostly light weight, it still adds a small performance overhead, it is also one additional thing to learn for someone who is more comfortable with SQL queries only. 
 
-####3. SQLite
-#####Reason:
+#### 3. SQLite
+##### Reason:
 No additional setup required and great for development
-#####Tradeoff: No real authenticatipon and probably requires a change of DB for deployments
-####4.Tagging and Versioning Logic
-#####Reason:
+##### Tradeoff: No real authenticatipon and probably requires a change of DB for deployments
+#### 4.Tagging and Versioning Logic
+##### Reason:
 We associated each tree with a an optoinal tag, and using cascading operations to create new versions based on old ones. Each tree can be tagged and retreived based on that tag, we can also restore/revert the tree from that version using the tag or create a new tree from that tag. 
 
-#####Tradeoff:
+##### Tradeoff:
 It can get tricky as the database scales and it can get challenging for deeply nested trees with parent child relationships.
 
-####5. Traversal & Pathfinding
-#####Choice: 
+#### 5. Traversal & Pathfinding
+##### Choice: 
 We used DFS as it builds the tree sub-tree by sub-tree and is more suitable when the destination is away from the source and likely not at the same level.
 #####Tradeoff: 
 Performance might take a toll with larger data with recurring visits to edges, might also not return the shortest path. 
 
 ### Usage
-####Create and Version a Tree
+#### Create and Version a Tree
 ```python
 from models import Tree, TreeVersion, Session, create_engine
 
